@@ -10,8 +10,6 @@ beir/
 models/
 temp/
 
-*.txt
-
 # logs
 *login*
 *log*
