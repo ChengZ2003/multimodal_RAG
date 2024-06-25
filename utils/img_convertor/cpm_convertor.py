@@ -2,7 +2,6 @@ from .base_convertor import BaseConvertor
 from ..system_prompt import TABLES_AND_CHARTS_CONVERT_SYSTEM
 import os
 import torch
-import numpy as np
 from PIL import Image
 from transformers import AutoModel, AutoTokenizer
 from typing import Optional

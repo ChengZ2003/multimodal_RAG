@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 
+
 class BaseConvertor(ABC):
     @abstractmethod
-    def convert(self, image):
+    def __init__(self):
         pass
 
     @abstractmethod

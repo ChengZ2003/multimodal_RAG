@@ -51,6 +51,7 @@ This work is built with reference to the code of the following projects:
 - [InternVL](https://github.com/OpenGVLab/InternVL)
 - [Unstructured](https://github.com/Unstructured-IO/unstructured)
 - [Ollama](https://github.com/ollama/ollama)
+- [BEIR](https://github.com/beir-cellar/beir)
 
 Thanks for their awesome work!
 

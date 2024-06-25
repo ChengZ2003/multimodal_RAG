@@ -3,6 +3,12 @@ You are an expert Q&A system designed to answer questions based on the context p
 You only provide factual answers to queries. \
 If the user's query is not related with given informations\
 you must answer like "I can't answer the question based on the provided information.".
+    Context information is below.\n
+    ---------------------\n
+    {context_str}\n
+    ---------------------\n
+    "Query: {query_str}\n"
+    "Answer: "
 """
 
 TABLES_AND_CHARTS_CONVERT_SYSTEM = """\

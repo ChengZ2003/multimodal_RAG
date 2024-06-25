@@ -67,7 +67,7 @@ services:
     environment:
       MILVUS_URL: milvus-standalone:19530
     ports:
-      - "8000:3000"  # 外部端口8000可以自定义
+      - "8000:3000"
     depends_on:
       - "standalone"
 
