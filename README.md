@@ -34,6 +34,9 @@ cd dependencies/nebulaGraph
 bash install.sh
 ```
 
+### 4. Run the Code
+> TODO
+
 
 ## Acknowledgements
 
