@@ -19,9 +19,6 @@ def parse_pdf(
 
     assert os.path.exists(pdf_path), f"PDF file {pdf_path} does not exist"
     if extract_images_in_pdf:
-        assert extract_image_block_output_dir is not None, "Please provide an output directory for image blocks"
-        if not os.path.exists(extract_image_block_output_dir):
-            os.makedirs(extract_image_block_output_dir)
         return partition_pdf(pdf_path,
                              strategy='hi_res',
                              extract_images_in_pdf=True,
@@ -81,3 +78,31 @@ def load_dataset(dataset_path: str) -> TestDataset:
 
     test_dataset = TestDataset(test_data=data_rows).to_dataset().to_dict()
     return test_dataset
+
+def load_img_captions(raw_docs,
+                     csv_path):
+    """
+    Load the image captions from a CSV file.
+    """
+
+    img_caption = pd.read_csv(csv_path)
+    pdf_id = csv_path.split("/")[-2]
+    img_ids = []
+    documents = []
+
+    for full_img_path in img_caption["image_path"]:
+        img_id = full_img_path.split("/")[-1]
+        img_ids.append(img_id)
+
+    for doc in raw_docs:
+        if doc.to_dict()["type"] in ["Table", "Image"]:
+            doc_img_id = doc.to_dict()["metadata"]["image_path"].split("/")[-1]
+            if doc_img_id in img_ids:
+                caption = img_caption.loc[img_caption["image_path"] == f"./images/{pdf_id}/{doc_img_id}", "caption"].values[0]
+                converted_doc = doc
+                converted_doc.text = caption
+                documents.append(converted_doc)
+        else:
+            documents.append(doc)
+
+    return documents
