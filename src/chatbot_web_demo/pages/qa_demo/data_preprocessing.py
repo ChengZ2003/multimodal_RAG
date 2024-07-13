@@ -1,5 +1,5 @@
-from ragas.testset.generator import TestDataset
-from ragas.testset.evolutions import DataRow
+# from ragas.testset.generator import TestDataset
+# from ragas.testset.evolutions import DataRow
 from unstructured.partition.pdf import partition_pdf
 from unstructured.chunking.basic import chunk_elements
 from llama_index.core import Document
@@ -9,10 +9,11 @@ import os
 import json
 from tqdm import tqdm
 
+
 def parse_pdf(
     pdf,
     extract_image_block_output_dir: Optional[str] = None,
-    extract_images_in_pdf: bool = False
+    extract_images_in_pdf: bool = False,
 ):
     """
     Parse a PDF file using the `unstructured` library.
@@ -20,18 +21,17 @@ def parse_pdf(
 
     assert os.path.exists(pdf), f"PDF file {pdf} does not exist"
     if extract_images_in_pdf:
-        return partition_pdf(pdf,
-                             strategy='hi_res',
-                             extract_images_in_pdf=True,
-                             extract_image_block_types=["Image", "Table"],
-                             extract_image_block_to_payload=False,
-                             extract_image_block_output_dir=extract_image_block_output_dir
+        return partition_pdf(
+            pdf,
+            strategy="hi_res",
+            extract_images_in_pdf=True,
+            extract_image_block_types=["Image", "Table"],
+            extract_image_block_to_payload=False,
+            extract_image_block_output_dir=extract_image_block_output_dir,
         )
     else:
-        return partition_pdf(pdf,
-                             strategy='hi_res',
-                             extract_images_in_pdf=False
-        )
+        return partition_pdf(pdf, strategy="hi_res", extract_images_in_pdf=False)
+
 
 def convert_img_to_tables(raw_docs, output_dir):
     """
@@ -51,7 +51,9 @@ def convert_img_to_tables(raw_docs, output_dir):
         if doc.to_dict()["type"] in ["Image", "Table"]:
             img_path = doc.to_dict()["metadata"]["image_path"]
             converted_text = cpm_convertor.convert(query=question, img_path=img_path)
-            img_captions.append({"image_path": img_path.split("/")[-1], "caption": converted_text})
+            img_captions.append(
+                {"image_path": img_path.split("/")[-1], "caption": converted_text}
+            )
             converted_doc = doc
             converted_doc.text = converted_text
             documents.append(converted_doc)
@@ -66,16 +68,12 @@ def convert_img_to_tables(raw_docs, output_dir):
     return documents
 
 
-def convert_to_documents(documents,
-              max_characters=512,
-              overlap=50):
+def convert_to_documents(documents, max_characters=512, overlap=50):
     """
     convert the partitioned documents to llamaindex Document objects.
     """
 
-    chunks = chunk_elements(documents,
-                            max_characters=max_characters,
-                            overlap=overlap)
+    chunks = chunk_elements(documents, max_characters=max_characters, overlap=overlap)
     documents = []
     text_seq = []
     for chunk in tqdm(chunks, desc="Converting to documents"):
@@ -84,40 +82,43 @@ def convert_to_documents(documents,
         document = Document(
             doc_id=chunk.to_dict()["element_id"],
             text=text,
-            metadata={"page_number": chunk.to_dict()["metadata"]["page_number"],
-                  "filename": chunk.to_dict()["metadata"]["filename"]}
+            metadata={
+                "page_number": chunk.to_dict()["metadata"]["page_number"],
+                "filename": chunk.to_dict()["metadata"]["filename"],
+            },
         )
         documents.append(document)
 
     return documents, text_seq
 
-def load_dataset(dataset_path: str) -> TestDataset:
-    """
-    Load the dataset from a CSV file.
-    """
 
-    assert dataset_path.endswith('.csv'), 'Dataset file must be a CSV file.'
+# def load_dataset(dataset_path: str) -> TestDataset:
+#     """
+#     Load the dataset from a CSV file.
+#     """
 
-    df = pd.read_csv(dataset_path,
-                     quotechar='"',
-                     skipinitialspace=True,)
+#     assert dataset_path.endswith('.csv'), 'Dataset file must be a CSV file.'
 
-    data_rows = []
-    for _, row in df.iterrows():
-        data_row = DataRow(
-            question=row['question'],
-            contexts=eval(row['contexts']),
-            ground_truth=row['ground_truth'],
-            evolution_type=row['evolution_type'],
-            metadata=eval(row['metadata'])
-        )
-        data_rows.append(data_row)
+#     df = pd.read_csv(dataset_path,
+#                      quotechar='"',
+#                      skipinitialspace=True,)
 
-    test_dataset = TestDataset(test_data=data_rows).to_dataset().to_dict()
-    return test_dataset
+#     data_rows = []
+#     for _, row in df.iterrows():
+#         data_row = DataRow(
+#             question=row['question'],
+#             contexts=eval(row['contexts']),
+#             ground_truth=row['ground_truth'],
+#             evolution_type=row['evolution_type'],
+#             metadata=eval(row['metadata'])
+#         )
+#         data_rows.append(data_row)
 
-def load_img_captions(raw_docs,
-                     csv_path):
+#     test_dataset = TestDataset(test_data=data_rows).to_dataset().to_dict()
+#     return test_dataset
+
+
+def load_img_captions(raw_docs, csv_path):
     """
     Load the image captions from a CSV file.
     """
@@ -135,7 +136,10 @@ def load_img_captions(raw_docs,
         if doc.to_dict()["type"] in ["Table", "Image"]:
             doc_img_id = doc.to_dict()["metadata"]["image_path"].split("/")[-1]
             if doc_img_id in img_ids:
-                caption = img_caption.loc[img_caption["image_path"] == f"./images/{pdf_id}/{doc_img_id}", "caption"].values[0]
+                caption = img_caption.loc[
+                    img_caption["image_path"] == f"./images/{pdf_id}/{doc_img_id}",
+                    "caption",
+                ].values[0]
                 converted_doc = doc
                 converted_doc.text = caption
                 documents.append(converted_doc)
@@ -143,6 +147,7 @@ def load_img_captions(raw_docs,
             documents.append(doc)
 
     return documents
+
 
 def ragas2beir(csv_file_path, output_dir="beir_dataset"):
     """
